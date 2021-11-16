@@ -45,6 +45,21 @@ class SignupForm extends Model
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function attributeLabels()
+    {
+        return [
+            'surname' => 'Фамилия',
+            'name' => 'Имя',
+            'email' => 'E-mail',
+            'password' => 'Пароль',
+            'cpassword' => 'Повторите пароль',
+
+        ];
+    }
+
+    /**
      * Signs user up.
      *
      * @return bool whether the creating new account was successful and email was sent
