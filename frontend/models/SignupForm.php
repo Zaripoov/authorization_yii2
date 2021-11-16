@@ -2,6 +2,7 @@
 
 namespace frontend\models;
 
+use common\models\UserProfile;
 use Yii;
 use yii\base\Model;
 use common\models\User;
@@ -11,9 +12,11 @@ use common\models\User;
  */
 class SignupForm extends Model
 {
-    public $username;
+    public $surname;
+    public $name;
     public $email;
     public $password;
+    public $cpassword;
 
 
     /**
@@ -22,19 +25,22 @@ class SignupForm extends Model
     public function rules()
     {
         return [
-            ['username', 'trim'],
-            ['username', 'required'],
-            ['username', 'unique', 'targetClass' => '\common\models\User', 'message' => 'This username has already been taken.'],
-            ['username', 'string', 'min' => 2, 'max' => 255],
+
+            ['surname', 'required'],
+
+            ['name', 'required'],
 
             ['email', 'trim'],
             ['email', 'required'],
             ['email', 'email'],
             ['email', 'string', 'max' => 255],
-            ['email', 'unique', 'targetClass' => '\common\models\User', 'message' => 'This email address has already been taken.'],
+            ['email', 'unique', 'targetClass' => '\common\models\User', 'message' => 'Этот адрес электронной почты уже занят.'],
 
             ['password', 'required'],
             ['password', 'string', 'min' => Yii::$app->params['user.passwordMinLength']],
+
+            ['cpassword', 'required'],
+            ['cpassword', 'compare', 'compareAttribute' => 'password'],
         ];
     }
 
@@ -50,13 +56,20 @@ class SignupForm extends Model
         }
         
         $user = new User();
-        $user->username = $this->username;
         $user->email = $this->email;
         $user->setPassword($this->password);
         $user->generateAuthKey();
         $user->generateEmailVerificationToken();
 
-        return $user->save() && $this->sendEmail($user);
+        if($user->save()){
+            $user_profile = new UserProfile();
+            $user_profile->user_id = $user->id;
+            $user_profile->surname = $this->surname;
+            $user_profile->name = $this->name;
+
+            //&& $this->sendEmail($user)
+            return  $user_profile->save();
+        }
     }
 
     /**
