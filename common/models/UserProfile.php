@@ -42,9 +42,8 @@ class UserProfile extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'user_id' => 'User ID',
-            'surname' => 'Surname',
-            'name' => 'Name',
+            'surname' => 'Фамилия',
+            'name' => 'Имя',
         ];
     }
 
@@ -57,4 +56,10 @@ class UserProfile extends \yii\db\ActiveRecord
     {
         return $this->hasOne(User::className(), ['id' => 'user_id']);
     }
+
+    public static function primaryKey()
+    {
+        return ['user_id'];
+    }
+
 }

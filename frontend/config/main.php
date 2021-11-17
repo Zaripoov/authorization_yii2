@@ -8,10 +8,25 @@ $params = array_merge(
 
 return [
     'id' => 'app-frontend',
+    'homeUrl' => '/login',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
     'controllerNamespace' => 'frontend\controllers',
+    'defaultRoute' => 'authorization',
     'components' => [
+        'mailer' => [
+            'class' => 'yii\swiftmailer\Mailer',
+            //'viewPath' => '@app/mail',
+            'transport' => [
+                'class' => 'Swift_SmtpTransport',
+                'host' => 'smtp.yandex.ru',
+                'username' => '',
+                'password' => '',
+                'port' => 465,
+                'encryption' => 'ssl',
+            ],
+            'useFileTransport' => true,
+        ],
         'request' => [
             'csrfParam' => '_csrf-frontend',
         ],
@@ -19,6 +34,7 @@ return [
             'identityClass' => 'common\models\User',
             'enableAutoLogin' => true,
             'identityCookie' => ['name' => '_identity-frontend', 'httpOnly' => true],
+            'loginUrl' => ['authorization/login'],
         ],
         'session' => [
             // this is the name of the session cookie used for login on the frontend
@@ -44,6 +60,10 @@ return [
                 'login' => 'authorization/login',
                 'signup' => 'authorization/signup',
                 'logout' => 'authorization/logout',
+                'token/<token>' => 'authorization/verify-email',
+
+                'profile' => 'user/profile',
+                'profile/edit' => 'user/edit',
             ],
         ],
 

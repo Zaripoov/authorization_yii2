@@ -26,21 +26,22 @@ class SignupForm extends Model
     {
         return [
 
-            ['surname', 'required'],
+            ['surname', 'required',  'message' => 'Обязательное поле'],
 
-            ['name', 'required'],
+            ['name', 'required' ,  'message' => 'Обязательное поле'],
 
             ['email', 'trim'],
-            ['email', 'required'],
-            ['email', 'email'],
+            ['email', 'required',  'message' => 'Обязательное поле'],
+            ['email', 'email' ,  'message' => 'Введен неверный E-mail'],
             ['email', 'string', 'max' => 255],
             ['email', 'unique', 'targetClass' => '\common\models\User', 'message' => 'Этот адрес электронной почты уже занят.'],
 
-            ['password', 'required'],
-            ['password', 'string', 'min' => Yii::$app->params['user.passwordMinLength']],
+            ['password', 'required', 'message' => 'Обязательное поле'],
+            ['password', 'string', 'min' => 6, 'message' => 'Должно быть больше 6 символов'],
 
             ['cpassword', 'required'],
-            ['cpassword', 'compare', 'compareAttribute' => 'password'],
+            ['сpassword', 'string', 'min' => 6, 'message' => 'Должно быть больше 6 символов'],
+            ['cpassword', 'compare', 'compareAttribute' => 'password', 'message' => 'Пароли не совпадают'],
         ];
     }
 
@@ -82,8 +83,8 @@ class SignupForm extends Model
             $user_profile->surname = $this->surname;
             $user_profile->name = $this->name;
 
-            //&& $this->sendEmail($user)
-            return  $user_profile->save();
+
+            return  $user_profile->save() && $this->sendEmail($user, $user_profile);
         }
     }
 
@@ -92,13 +93,13 @@ class SignupForm extends Model
      * @param User $user user model to with email should be send
      * @return bool whether the email was sent
      */
-    protected function sendEmail($user)
+    protected function sendEmail($user, $user_profile)
     {
         return Yii::$app
             ->mailer
             ->compose(
                 ['html' => 'emailVerify-html', 'text' => 'emailVerify-text'],
-                ['user' => $user]
+                ['user' => $user, 'user_profile' => $user_profile]
             )
             ->setFrom([Yii::$app->params['supportEmail'] => Yii::$app->name . ' robot'])
             ->setTo($this->email)

@@ -4,13 +4,42 @@ namespace frontend\controllers;
 
 use common\models\LoginForm;
 use frontend\models\SignupForm;
+use frontend\models\VerifyEmailForm;
 use Yii;
+use yii\base\InvalidArgumentException;
+use yii\filters\AccessControl;
+use yii\filters\VerbFilter;
+use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 
 class AuthorizationController extends Controller
 {
 
+    public function behaviors()
+    {
+        return [
+            'access' => [
+                'class' => AccessControl::className(),
+                'only' => ['logout', 'signup'],
+                'rules' => [
+                    [
+                        'actions' => ['signup'],
+                        'allow' => true,
+                        'roles' => ['?'],
+                    ],
+                    [
+                        'actions' => ['logout'],
+                        'allow' => true,
+                        'roles' => ['@'],
+                    ],
+                ],
+            ],
+        ];
+    }
 
+    public function actionIndex(){
+        return $this->redirect('/login');
+    }
 
     public function actionLogin(){
         if (!Yii::$app->user->isGuest) {
@@ -19,7 +48,7 @@ class AuthorizationController extends Controller
 
         $model = new LoginForm();
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
+            return $this->redirect(['/profile']);
         }
 
         $model->password = '';
@@ -41,6 +70,22 @@ class AuthorizationController extends Controller
         return $this->render('signup', [
             'model' => $model,
         ]);
+    }
+
+    public function actionVerifyEmail($token)
+    {
+        try {
+            $model = new VerifyEmailForm($token);
+        } catch (InvalidArgumentException $e) {
+            throw new BadRequestHttpException($e->getMessage());
+        }
+        if (($user = $model->verifyEmail()) && Yii::$app->user->login($user)) {
+            Yii::$app->session->setFlash('success', 'Your email has been confirmed!');
+            return $this->goHome();
+        }
+
+        Yii::$app->session->setFlash('error', 'Sorry, we are unable to verify your account with provided token.');
+        return $this->goHome();
     }
 
 
